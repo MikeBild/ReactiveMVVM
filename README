@@ -1,0 +1,7 @@
+Reactive MVVM Toolkit
+
+Backlog:
+Navigation GoBack
+Navigation GoForward
+IUnitOfWork instead of IIsolatedStorageUnitOfWork
+Reactive repository that using messagebus

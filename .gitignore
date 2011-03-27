@@ -1,0 +1,11 @@
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+_ReSharper.*/
+source/output/*
+*.suo
+*.sln.cache
+*.orig
+*.user
