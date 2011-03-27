@@ -1,36 +1,43 @@
+using System.Collections.Generic;
 using System.Reflection;
 using Autofac;
 using ReactiveMVVM.Bus;
+using System.Linq;
 
 namespace ReactiveMVVM
 {
     public abstract class BootStrapper
     {
-        private readonly ContainerBuilder _builder;        
+        private readonly ContainerBuilder _builder;
+        private readonly IList<Assembly> _mergedAssemblies = new List<Assembly>();
         public static IContainer Container { get; private set; }
-        protected ContainerBuilder Builder
+        
+        protected ContainerBuilder Builder { get { return _builder; }}
+
+        protected BootStrapper RegisterAssembly(Assembly assembly)
         {
-            get { return _builder; }
+            _mergedAssemblies.Add(Assembly.GetCallingAssembly());
+            return this;
         }
 
         protected BootStrapper()
         {
             _builder = new ContainerBuilder();
-            Builder.Register(x => new RxMessageBus()).As(typeof(IMessageBus)).SingleInstance();
-            Builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).AssignableTo<ICommandMessage>().Named<ICommandMessage>(u => u.Name);
-            Builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).AssignableTo<IEventMessage>().Named<IEventMessage>(u => u.Name);                        
         }
 
-        protected static void Startup()
+        protected void Startup()
         {
-            var startupBuilder = new ContainerBuilder();            
-            startupBuilder.RegisterAssemblyTypes(Assembly.GetCallingAssembly(),Assembly.GetExecutingAssembly()).AssignableTo<IStartable>().As<IStartable>().SingleInstance();
-            startupBuilder.Build();            
+            var startupBuilder = new ContainerBuilder();
+            startupBuilder.RegisterAssemblyTypes(_mergedAssemblies.ToArray()).AssignableTo<IStartable>().As<IStartable>().SingleInstance();
+            startupBuilder.Build();
         }
 
         public virtual void Configure()
         {
-            Container = _builder.Build();                       
+            _builder.Register(x => new RxMessageBus()).As(typeof(IMessageBus)).SingleInstance();
+            _builder.RegisterAssemblyTypes(_mergedAssemblies.ToArray()).AssignableTo<ICommandMessage>().Named<ICommandMessage>(u => u.Name);
+            _builder.RegisterAssemblyTypes(_mergedAssemblies.ToArray()).AssignableTo<IEventMessage>().Named<IEventMessage>(u => u.Name);
+            Container = _builder.Build();
         }
     }
 }

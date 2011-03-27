@@ -1,7 +1,203 @@
-Reactive MVVM Toolkit
+ReactiveMVVM Toolkit
 
-Backlog:
-Navigation GoBack
-Navigation GoForward
+is a small MVVM Toolkit with base classes for build Silverlight applications that using the MMVM pattern. ReactiveMVVM is based on Rx.NET as inmemory message bus and AutoFac as DI based instance lifecycle manager and type resolver.
+
+HOW TO USE
+
+ENVIRONMENT - Application BootStrapper & Application Host
+
+1) Build your own BootStrapper for type registrations
+	
+	public class TodoListBootStrapper : BootStrapper
+    {
+        public TodoListBootStrapper()
+        {
+            Builder.RegisterType<IsolatedStorageUnitOfWork>().As<IIsolatedStorageUnitOfWork>();            
+        }
+
+        public override void Configure()
+        {
+            base.Configure();
+            Startup();
+        }
+    }
+
+2) Add BootStrapper configuration to application startup
+	
+	public partial class App : Application
+    {        
+        public App()
+        {            
+            new TodoListBootStrapper().Configure();
+		}
+	}
+	
+3) Build application environment by inheriting from SilverlightAppHost
+
+    public class MyAppHost : SilverlightAppHost
+    {
+		...
+	}
+
+4) Override Start() by implementing application startup operations
+
+    public class MyAppHost : SilverlightAppHost
+    {
+		public override void Start()
+		{ 
+		  ...
+		}
+	}
+	
+VIEWMODEL
+
+The ViewModel has two parts. One is the ViewModel self and one is a PageController for the ViewModel, View and external component communication.
+1) Create you data or domain model like:
+	public class TodoItem
+    {
+        public string Description { get; set; }
+        public bool IsDone { get; set; }
+        public Guid TodoId { get; set; }
+    }
+
+2) Create a ViewModel by implement the IViewModel tagging interface. For example:
+	public class MyViewModel : IViewModel
+    {
+        private readonly ObservableCollection<TodoItem> _toDos = new ObservableCollection<TodoItem>();
+        public ReadOnlyObservableCollection<TodoItem> ToDos { get; private set; }
+
+        public MyViewModel()
+        {
+            ToDos = new ReadOnlyObservableCollection<TodoItem>(_toDos);
+        }
+	}
+
+3) Create a PageController	by inheriting from PageController<T>. For example:
+	public class MyPageController : PageController<MyViewModel>
+    {
+        public MyPageController()
+		{
+			MyCommand = new DelegateCommand<TodoItem>(todoItem=>{ ... });
+		}
+		
+		public ICommand MyCommand { get;set;}
+	}
+
+4) Register the PageControlle as static application resource in your App.xaml like:
+	<Application.Resources>
+        <ResourceDictionary>
+            <Pages:MyPageController x:Key="myPageController" d:IsDataSource="True" /> 
+        </ResourceDictionary>
+    </Application.Resources>
+	
+5) Register the PageController in your XAML UserControl or XAML Page definition like:
+	<Controls:Page x:Class="..."
+	...
+	DataContext="{Binding Source={StaticResource myPageController}}"
+	...
+	</Controls:Page>
+	
+6) Now you can invoke commands in XAML views by using standard triggers like Command="{Binding MyCommand}" or interaction triggers from System.Windows.Interactivity. For example:
+	--- As Standard Command ---
+	<Button Content="Neu" Height="23" HorizontalAlignment="Left" Margin="0,300,0,0" Name="button1" VerticalAlignment="Top" Width="200" Command="{Binding MyCommand}" />
+	--- In Page ---
+	<Interactivity:Interaction.Triggers>
+        <Interactivity:EventTrigger EventName="Loaded">
+            <Interactivity:InvokeCommandAction Command="{Binding MyCommand}"/>
+        </Interactivity:EventTrigger>
+	</Interactivity:Interaction.Triggers>
+	--- In Templates ---
+	<CheckBox IsChecked="{Binding IsDone, Mode=TwoWay}" Content="2" Height="16" HorizontalAlignment="Left" Width="20" VerticalAlignment="Top" Margin="0,4,0,0">
+		<Interactivity:Interaction.Triggers>
+			<Interactivity:EventTrigger EventName="Click">
+				<Interactivity:InvokeCommandAction Command="{Binding Path=MyCommand, Source={StaticResource myPageController}}" CommandParameter="{Binding}"/>
+			</Interactivity:EventTrigger>
+		</Interactivity:Interaction.Triggers>
+	</CheckBox>
+
+COMMANDS
+ReactiveMVVM has 4 easy to use commands implemented.
+	---  DELEGATECOMMAND - a classic delegate based command ---
+	public class DelegateCommand<T> : ICommand where T : class
+	--- 
+	public ICommand MyCommand { get;set; }
+	MyCommand = new DelegateCommand<TodoItem>(x => { /*invoked by ICommand.Execute */});
+
+	--- PUBLISHCOMMAND - a message bus based command for publishing a event message ---
+	public class PublishCommand<TBinding> : ICommand where TBinding : class
+	---
+	public ICommand MyCommand { get;set; }
+	MyCommand = new PublishCommand<TodoItem>(x => new TodoItemDescriptionChanged() { Id = x.TodoId, NewDescription = x.Description } /*return the IEventMessage to publish*/ );
+
+	--- SENDCOMMAND - a message bus based command for sending a command message ---
+	public class SendCommand<TBinding> : ICommand where TBinding : class
+	---
+	public ICommand MyCommand { get;set; }
+	MyCommand = new SendCommand<TodoItem>(x => new LoadTodoItemList() /*return the ICommandMessage to send*/ );
+
+	--- REGISTERCOMMAND - a message bus based command for registing to recieve messages ---
+	public class RegisterCommand<TMessage> : ICommand where TMessage : class, IMessage
+	---
+	public ICommand MyCommand { get;set; }
+	MyCommand = new RegisterCommand<TMessage>(x => { /*invoked by receiving a IMessage from message bus */  });
+	
+TRIGGER
+ReactiveMVVM has 2 easy to use triggers for using in XAML implemented.
+	--- MESSAGETRIGGER - a trigger to send a message to message bus ---
+		<Button Content="MessageBox" Height="23" HorizontalAlignment="Left" Margin="61,140,0,0" Name="button1" VerticalAlignment="Top" Width="75">
+            <Interactivity:Interaction.Triggers>
+                <Interactivity:EventTrigger EventName="Click">
+                    <Xaml:MessageTrigger CommandMessage="ShowMessageBox" />
+                </Interactivity:EventTrigger>
+            </Interactivity:Interaction.Triggers>
+        </Button>
+	
+	--- NAVIGATETOTRIGGER - a trigger to navigate to other page ---
+	<Button Content="Back" Height="23" HorizontalAlignment="Left" Margin="0,327,0,0" Name="hyperlinkButton1" VerticalAlignment="Top" Width="200">
+		<Interactivity:Interaction.Triggers>
+			<Interactivity:EventTrigger EventName="Click">
+				<Xaml:NavigateToTrigger NavigateUrl="/View/ToDoListPage.xaml"/>
+			</Interactivity:EventTrigger>
+		</Interactivity:Interaction.Triggers>
+    </Button>
+
+NAVIGATION
+1) For using navigation add following to MainPage.xaml
+	<navigation:Frame Source="{YourStartupPageName}.xaml" ReactiveMVVM:SilverlightAppHost.RegisterFrame="True" />
+
+2) and add following to App.xaml to register a static application resource object for holding state of navigation parameter
+	<Application.Resources>
+        <ResourceDictionary>
+            <Navigation:NavigationParameter x:Key="navigationParameters" d:IsDataSource="True" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+MESSAGE BUS
+The message bus is the central application hub for component communication. The message bus manage and orchestrate the collaboration between all application 
+components and all page controllers by using a message based communication pattern.
+EVENT & COMMAND HANDLING
+
+	
+	
+PERSISTENCE
+comming soon
+
+
+BACKLOG:
+Rename to PageController
+NavigateToCommand
+Navigation GoBack Command and Trigger
+Navigation GoForward Command and Trigger
+Object Parameter in MessageTrigger
 IUnitOfWork instead of IIsolatedStorageUnitOfWork
-Reactive repository that using messagebus
+wcf based persistence
+reactive repository abstraction that using rx messagebus
+wcf client integration for remote query, commands and events
+a wpf and wp7 port
+build up a NuGet package
+some more samples for API validation
+some integration tests
+
+
+ReactiveMVVM is inspired by MVVM Light Toolkit.
+ReactiveMVVM using external libs AutoFac, Rx.NET from NuGet repository.
