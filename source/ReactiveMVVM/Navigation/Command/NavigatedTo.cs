@@ -1,7 +1,7 @@
 using System;
 using ReactiveMVVM.Bus;
 
-namespace ReactiveMVVM.Navigation
+namespace ReactiveMVVM.Navigation.Command
 {
     public class NavigatedTo : IEventMessage
     {

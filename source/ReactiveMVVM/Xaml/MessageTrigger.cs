@@ -39,7 +39,7 @@ namespace ReactiveMVVM.Xaml
         {
             object message;
             if (!String.IsNullOrEmpty(EventMessage))
-                if (BootStrapper.Container.TryResolveNamed(EventMessage, typeof(IEventMessage), out message))
+                if (SilverlightAppHost.Container.TryResolveNamed(EventMessage, typeof(IEventMessage), out message))
                 {
                     ((IMessage)message).Id = ObjectGuidParameter;
                     SilverlightAppHost.MessageBus.Publish(message as IEventMessage);
@@ -52,7 +52,7 @@ namespace ReactiveMVVM.Xaml
         {
             object message;
             if (!String.IsNullOrEmpty(CommandMessage))
-                if (BootStrapper.Container.TryResolveNamed(CommandMessage, typeof(ICommandMessage), out message))
+                if (SilverlightAppHost.Container.TryResolveNamed(CommandMessage, typeof(ICommandMessage), out message))
                 {
                     ((IMessage)message).Id = ObjectGuidParameter;
                     SilverlightAppHost.MessageBus.Send(message as ICommandMessage);

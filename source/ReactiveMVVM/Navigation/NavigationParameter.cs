@@ -18,7 +18,7 @@ namespace ReactiveMVVM.Navigation
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance).As(asType).ExternallyOwned();
-            builder.Update(BootStrapper.Container);
+            builder.Update(SilverlightAppHost.Container);
         }
     }
 }

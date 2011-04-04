@@ -69,28 +69,31 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BootStrapper.cs" />
     <Compile Include="Bus\ICommandMessage.cs" />
     <Compile Include="Bus\IEventMessage.cs" />
     <Compile Include="Bus\IMessage.cs" />
     <Compile Include="Bus\IMessageBus.cs" />
     <Compile Include="Bus\RxMessageBus.cs" />
     <Compile Include="Navigation\INavigationParameter.cs" />
-    <Compile Include="Navigation\NavigatedTo.cs" />
+    <Compile Include="Navigation\Command\NavigatedTo.cs" />
     <Compile Include="Navigation\NavigationContentLoader.cs" />
     <Compile Include="Navigation\NavigationParameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SilverlightAppHost.cs" />
+    <Compile Include="ViewModel\ViewModelField.cs" />
     <Compile Include="ViewModel\Command\DelegateCommand.cs" />
+    <Compile Include="ViewModel\Command\GoBackCommand.cs" />
+    <Compile Include="ViewModel\Command\GoForwardCommand.cs" />
+    <Compile Include="ViewModel\Command\NavigateCommand.cs" />
     <Compile Include="ViewModel\Command\PublishCommand.cs" />
     <Compile Include="ViewModel\Command\RegisterCommand.cs" />
     <Compile Include="ViewModel\Command\SendCommand.cs" />
     <Compile Include="ViewModel\IViewModel.cs" />
-    <Compile Include="ViewModel\IViewModelController.cs" />
+    <Compile Include="ViewModel\IViewController.cs" />
     <Compile Include="ViewModel\NotifyObject.cs" />
-    <Compile Include="ViewModel\ViewModelController.cs" />
+    <Compile Include="ViewModel\ViewController.cs" />
     <Compile Include="Xaml\MessageTrigger.cs" />
-    <Compile Include="Xaml\NavigateToTrigger.cs" />
+    <Compile Include="Xaml\NavigateTrigger.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Storage\" />

@@ -11,7 +11,8 @@ namespace ReactiveMVVM.ViewModel.Command
         private readonly Func<TMessage, bool> _predicate;
         public event EventHandler CanExecuteChanged = delegate { };
 
-        public RegisterCommand(Action<TMessage> message) :this(message,x=>true)
+        public RegisterCommand(Action<TMessage> message)
+            : this(message, x => true)
         {
         }
 
@@ -28,7 +29,7 @@ namespace ReactiveMVVM.ViewModel.Command
 
         public void Execute(object parameter)
         {
-            var serviceBus = BootStrapper.Container.Resolve<IMessageBus>();
+            var serviceBus = SilverlightAppHost.Container.Resolve<IMessageBus>();
             serviceBus.Register(_message);
         }
     }

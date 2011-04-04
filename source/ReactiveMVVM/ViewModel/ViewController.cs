@@ -5,18 +5,18 @@ using ReactiveMVVM.Bus;
 
 namespace ReactiveMVVM.ViewModel
 {
-    public abstract class ViewModelController<T> : IViewModelController<T> where T : IViewModel, new()
+    public abstract class ViewController<T> : IViewController<T> where T : IViewModel, new()
     {
         public IMessageBus MessageBus { get; private set; }
         public T ViewModel { get; private set; }
 
-        protected ViewModelController()
+        protected ViewController()
         {
             ViewModel = new T();
             if (!DesignerProperties.IsInDesignTool)
             {
-                MessageBus = BootStrapper.Container.Resolve<IMessageBus>();
-                RegisterInstanceInServiceLocator(this, typeof (ViewModelController<T>));
+                MessageBus = SilverlightAppHost.Container.Resolve<IMessageBus>();
+                RegisterInstanceInServiceLocator(this, typeof (ViewController<T>));
             }
         }
 
@@ -24,7 +24,7 @@ namespace ReactiveMVVM.ViewModel
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance).As(asType).ExternallyOwned();
-            builder.Update(BootStrapper.Container);
+            builder.Update(SilverlightAppHost.Container);
         }
     }
 }

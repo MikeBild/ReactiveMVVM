@@ -22,7 +22,7 @@ namespace ReactiveMVVM.ViewModel.Command
 
         public void Execute(object parameter)
         {
-            var serviceBus = BootStrapper.Container.Resolve<IMessageBus>();
+            var serviceBus = SilverlightAppHost.Container.Resolve<IMessageBus>();
             serviceBus.Publish(_message(parameter as TBinding));
         }
     }
