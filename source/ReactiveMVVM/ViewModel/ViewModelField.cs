@@ -9,7 +9,6 @@ namespace ReactiveMVVM.ViewModel
         public ViewModelField()
         {
             _isVisible = true;
-            _isVisible = true;
             _isEnabled = true;
             _validationMessage = String.Empty;
         }
